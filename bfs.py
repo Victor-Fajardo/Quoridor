@@ -35,14 +35,15 @@ def bfs(ini, fin):
     queue = deque()
     dad[ini] = (-1, -1)
     queue.appendleft(ini)
-    visit[ini[0]][ini[1]] = True
+    #visit[ini[0]][ini[1]] = True
     while len(queue):
         cur = queue.popleft()
+        visit[cur[0]][cur[1]] = True
         for op in range(4):
             nx, ny = cur[0] + dx[op], cur[1] + dy[op]
             if (not invalid(cur, nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
                 queue.append((nx, ny))
-                visit[nx][ny] = True
+                #visit[nx][ny] = True
                 dad[(nx, ny)] = cur
 
     p = reconstructionPath()
@@ -53,4 +54,4 @@ def bfs(ini, fin):
 #Display Graph
 #networkx.draw(Board_Graph, with_labels = True, node_size = 50)
 #plt.show()
-print(bfs( (0, 0), (1, 2) ))
+print(bfs( (0, 0), (8, 8) ))
