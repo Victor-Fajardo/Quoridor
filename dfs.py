@@ -15,7 +15,7 @@ print(Board_Graph.has_edge((0, 0), (0, 1)))
 
 
 def dfs(ini, fin):
-    def invalid(auxcur, x, y):
+    def invalid(x, y):
         return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
                or (visit[x][y])
 
@@ -41,7 +41,7 @@ def dfs(ini, fin):
         #visit[cur[0]][cur[1]] = True
         for op in range(4):
             nx, ny = cur[0] + dx[op], cur[1] + dy[op]
-            if (not invalid(cur, nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
+            if (not invalid(nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
                 queue.append((nx, ny))
                 visit[nx][ny] = True
                 dad[(nx, ny)] = cur
