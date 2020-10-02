@@ -12,10 +12,6 @@ Board_Graph.add_edges_from((((i, j), (i - 1, j)) for i in range(rows) for j in r
 Board_Graph.add_edges_from((((i, j), (i, j - 1)) for i in range(rows) for j in range(columns) if j > 0))
 
 
-
-
-
-
 def dfs_interativo(ini, fin):
     def invalid(x, y):
         return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
@@ -54,7 +50,7 @@ def dfs_interativo(ini, fin):
     print(len(p))
     return p
 
-'''
+
 def dfs(ini, fin):
     visit[ini[0]][ini[1]] = True
     if ini == fin:
@@ -72,7 +68,7 @@ def invalid(x, y):
            or (visit[x][y])
 
 
-def reconstructionPath(ini, fin):
+def reconpath(ini, fin):
     path = deque()
     ix = fin
     while ix is not dad[ini]:
@@ -88,14 +84,13 @@ dy = [1, -1, 0, 0]
 dad = {}
 queue = deque()
 dad[(0, 0)] = (-1, -1)
-dfs((0, 0), (8, 8))
+dfs((0, 0), (0, 3))
+
+p = reconpath( (0, 0), (0, 3) )
+print(len(p))
+print(p)
 #Display Graph
 #networkx.draw(Board_Graph, with_labels = True, node_size = 50)
 #plt.show()
-p = reconstructionPath( (0, 0), (8, 8) )
-print(len(p))
-print(p)
 
-'''
-
-print(dfs_interativo((0, 0), (8, 8)))
+print(dfs_interativo((0, 0), (3, 0)))
