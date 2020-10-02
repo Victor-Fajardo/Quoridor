@@ -104,6 +104,46 @@ def DFS(ini, fin):
 	time = time_end - time_start
 	return p, time
 
+def BruteForce(ini, fin):
+	time_start = pygame.time.get_ticks()
+	queue = deque()
+	queue.append(ini)
+
+	def fuerza_bruta(ini, fin):
+		if ini == fin:
+			return
+
+		def invalid(x, y):
+			return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
+				   or (visit[x][y])
+
+		visit = [[False for col in range(columns)] for row in range(rows)]
+		nodoIniAux = ini
+		pasoX = 0
+		pasoY = 0
+		visit[nodoIniAux[0]][nodoIniAux[1]] = True
+
+		if nodoIniAux[0] < fin[0]:
+			pasoX += 1
+		elif nodoIniAux[0] < fin[0]:
+			pasoX -= 1
+		elif nodoIniAux[0] == fin[0]:
+			if (nodoIniAux[1] < fin[1]):
+				pasoY += 1
+			elif (nodoIniAux[1] > fin[1]):
+				pasoY -= 1
+
+		nx, ny = nodoIniAux[0] + pasoX, nodoIniAux[1] + pasoY
+		if (not invalid(nx, ny)) and (Board_Graph.has_edge(nodoIniAux, (nx, ny))):
+			##se agrega el nodo valido
+			queue.append((nx, ny))
+			fuerza_bruta((nx, ny), fin)
+
+	fuerza_bruta(ini, fin)
+	time_end = pygame.time.get_ticks()
+	time = time_end - time_start
+	return queue, time
+
 #Display Graph
 #networkx.draw(Board_Graph, with_labels = True, node_size = 50)
 #plt.show()
@@ -134,6 +174,7 @@ algorithm = 1
 algorithm_name = "BFS"
 path_lenght = 0
 time = 0
+path = ()
 
 #Colors defined:
 BLACK    = (   0,   0,   0)
@@ -174,6 +215,11 @@ def FillSquare(color, pos):
 
 	pygame.draw.rect(screen, color, [x0, y0, SpaceX, SpaceY], 0)
 
+def DrawPath(path):
+	if path != None:
+		for i in range(len(path)):
+			FillSquare(GREEN, path[i])
+
 #Game Loop:
 while not done:
 	for event in pygame.event.get():
@@ -193,8 +239,8 @@ while not done:
 					alg_result = BFS(start_pos, pos)
 				elif algorithm == 2:
 					alg_result = DFS(start_pos, pos)
-				#elif algorithm == 3:
-					#alg_result = 
+				elif algorithm == 3:
+					alg_result = BruteForce(start_pos, pos)
 
 				path = alg_result[0]
 				path_lenght = len(path)
@@ -202,6 +248,20 @@ while not done:
 				screen.fill(BLACK)
 				for i in range(len(path)):
 					FillSquare(GREEN, path[i])
+					
+					#Delay added
+					pygame.time.delay(50)
+					#Upadating the screen
+					screen.blit(instructions1, (0, 0))
+					screen.blit(instructions2, (0, 20))
+					screen.blit(instructions3, (0, 40))
+					screen.blit(alg_name, (width-300, 0))
+					screen.blit(alg_time, (0, height-25))
+					screen.blit(path_len, (width-250, height-25))
+					FillSquare(RED, start_pos)
+					DrawBoard()
+					pygame.display.flip()
+
 
 		#Algorithm selection
 		if event.type == pygame.KEYDOWN:
@@ -215,9 +275,10 @@ while not done:
 				screen.fill(BLACK)
 			if event.key == pygame.K_3:
 				algorithm = 3
-				algorithm_name = "."
+				algorithm_name = "Fuerza Bruta"
 				screen.fill(BLACK)
 
+	screen.fill(BLACK)
 	instructions1 = font.render("Click izquierdo -> Seleccionar punto de inicio", True, WHITE)
 	instructions2 = font.render("Click derecho -> Generar camino", True, WHITE)
 	instructions3 = font.render("1, 2 y 3-> Cambiar de algoritmo", True, WHITE)
@@ -227,10 +288,10 @@ while not done:
 	screen.blit(instructions1, (0, 0))
 	screen.blit(instructions2, (0, 20))
 	screen.blit(instructions3, (0, 40))
-	screen.blit(alg_name, (width-200, 0))
+	screen.blit(alg_name, (width-300, 0))
 	screen.blit(alg_time, (0, height-25))
 	screen.blit(path_len, (width-250, height-25))
-
+	DrawPath(path)
 	FillSquare(RED, start_pos)
 	DrawBoard()
 	pygame.display.flip()
