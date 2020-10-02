@@ -28,40 +28,81 @@ def PlaceWall():
 	Board_Graph.degree[(0,0)]
 
 def BFS(ini, fin):
-    def invalid(auxcur, x, y):
-        return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
-               or (visit[x][y])
+	time_start = pygame.time.get_ticks()
+	def invalid(auxcur, x, y):
+		return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
+			   or (visit[x][y])
 
-    def reconstructionPath():
-        path = deque()
-        ix = fin
-        while ix is not dad[ini]:
-            path.appendleft(ix)
-            ix = dad[ix]
+	def reconstructionPath():
+		path = deque()
+		ix = fin
+		while ix is not dad[ini]:
+			path.appendleft(ix)
+			ix = dad[ix]
+		return path
 
-        return path
+	visit = [[False for col in range(columns)] for row in range(rows)]
+	dx = [0, 0, 1, -1]
+	dy = [1, -1, 0, 0]
+	dad = {}
+	queue = deque()
+	dad[ini] = (-1, -1)
+	queue.appendleft(ini)
+	#visit[ini[0]][ini[1]] = True
+	while len(queue):
+		cur = queue.popleft()
+		visit[cur[0]][cur[1]] = True
+		for op in range(4):
+			nx, ny = cur[0] + dx[op], cur[1] + dy[op]
+			if (not invalid(cur, nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
+				queue.append((nx, ny))
+				#visit[nx][ny] = True
+				dad[(nx, ny)] = cur
 
-    visit = [[False for col in range(columns)] for row in range(rows)]
-    dx = [0, 0, 1, -1]
-    dy = [1, -1, 0, 0]
-    dad = {}
-    queue = deque()
-    dad[ini] = (-1, -1)
-    queue.appendleft(ini)
-    #visit[ini[0]][ini[1]] = True
-    while len(queue):
-        cur = queue.popleft()
-        visit[cur[0]][cur[1]] = True
-        for op in range(4):
-            nx, ny = cur[0] + dx[op], cur[1] + dy[op]
-            if (not invalid(cur, nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
-                queue.append((nx, ny))
-                #visit[nx][ny] = True
-                dad[(nx, ny)] = cur
+	p = reconstructionPath()
+	#print(len(p))
+	time_end = pygame.time.get_ticks()
+	time = time_end - time_start
+	return p, time
 
-    p = reconstructionPath()
-    print(len(p))
-    return p
+def DFS(ini, fin):
+	time_start = pygame.time.get_ticks()
+	def invalid(x, y):
+		return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
+			   or (visit[x][y])
+
+	def reconstructionPath():
+		path = deque()
+		ix = fin
+		while ix is not dad[ini]:
+			path.appendleft(ix)
+			ix = dad[ix]
+
+		return path
+
+	visit = [[False for col in range(columns)] for row in range(rows)]
+	dx = [0, 0, 1, -1]
+	dy = [1, -1, 0, 0]
+	dad = {}
+	queue = deque()
+	dad[ini] = (-1, -1)
+	queue.appendleft(ini)
+	#visit[ini[0]][ini[1]] = True
+	while len(queue):
+		cur = queue.pop()
+		visit[cur[0]][cur[1]] = True
+		for op in range(4):
+			nx, ny = cur[0] + dx[op], cur[1] + dy[op]
+			if (not invalid(nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
+				queue.append((nx, ny))
+				#visit[nx][ny] = True
+				dad[(nx, ny)] = cur
+
+	p = reconstructionPath()
+	#print(len(p))
+	time_end = pygame.time.get_ticks()
+	time = time_end - time_start
+	return p, time
 
 #Display Graph
 #networkx.draw(Board_Graph, with_labels = True, node_size = 50)
@@ -79,7 +120,7 @@ pygame.init()
 
 #Font created
 pygame.font.init()
-font = pygame.font.SysFont("Arial", 20)
+font = pygame.font.SysFont("verdana", 20)
 
 #Screen size defined:
 global width
@@ -87,6 +128,12 @@ global height
 width  = 800
 height = 800
 size = (width,height)
+
+start_pos = (0, 0)
+algorithm = 1
+algorithm_name = "BFS"
+path_lenght = 0
+time = 0
 
 #Colors defined:
 BLACK    = (   0,   0,   0)
@@ -105,16 +152,16 @@ def DrawBoard():
 	SpaceY = int((height-100)/rows)
 	for i in range(columns+1):
 		x = 50 + SpaceX*i
-		pygame.draw.line(screen, BLUE, (x,50), (x,height-50))
+		pygame.draw.line(screen, BLUE, (x,80), (x,SpaceX*columns+80))
 	for i in range(rows+1):
-		y = 50 + SpaceY*i
-		pygame.draw.line(screen, BLUE, (50,y), (width-50,y))
+		y = 80 + SpaceY*i
+		pygame.draw.line(screen, BLUE, (50,y), (SpaceY*rows+50,y))
 
 def ConvertMousePos(MousePos):
 	SpaceX = int((width-100)/columns)
 	SpaceY = int((height-100)/rows)
 	x = int((MousePos[0]-50)/SpaceX)
-	y = int((MousePos[1]-50)/SpaceY)
+	y = int((MousePos[1]-80)/SpaceY)
 
 	return x, y
 
@@ -123,30 +170,67 @@ def FillSquare(color, pos):
 	SpaceY = int((height-100)/rows)
 
 	x0 = 50 + SpaceX*pos[0]
-	y0 = 50 + SpaceY*pos[1]
+	y0 = 80 + SpaceY*pos[1]
 
 	pygame.draw.rect(screen, color, [x0, y0, SpaceX, SpaceY], 0)
 
-
 #Game Loop:
 while not done:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: 
-        	done = True
-        #Clicking a tile will create a path to it from (0, 0)
-        if event.type == pygame.MOUSEBUTTONDOWN:
-        	pos = ConvertMousePos(pygame.mouse.get_pos())
-        	path =  BFS((0,0), pos)
-        	for i in range(len(path)):
-        		FillSquare(GREEN, path[i])
-        #Pressing 4 will clear the board
-        if event.type == pygame.KEYDOWN:
-        	if event.key == pygame.K_4:
-        		screen.fill(BLACK)
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT: 
+			done = True
+		#Clicking a tile will create a path to it from (0, 0)
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			if event.button == 1:
+				pos = ConvertMousePos(pygame.mouse.get_pos())
+				start_pos = pos
+				screen.fill(BLACK)
 
-    instructions1 = font.render("Hacer click en un recuadro para generar un camino", True, WHITE)
-    instructions2 = font.render("Presionar 4 para limpiar el tablero", True, WHITE)
-    screen.blit(instructions1, (0, 0))
-    screen.blit(instructions2, (0, 20))
-    DrawBoard()
-    pygame.display.flip()
+			if event.button == 3:
+				pos = ConvertMousePos(pygame.mouse.get_pos())
+
+				if algorithm == 1:
+					alg_result = BFS(start_pos, pos)
+				elif algorithm == 2:
+					alg_result = DFS(start_pos, pos)
+				#elif algorithm == 3:
+					#alg_result = 
+
+				path = alg_result[0]
+				path_lenght = len(path)
+				time = alg_result[1]
+				screen.fill(BLACK)
+				for i in range(len(path)):
+					FillSquare(GREEN, path[i])
+
+		#Algorithm selection
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_1:
+				algorithm = 1
+				algorithm_name = "BFS"
+				screen.fill(BLACK)
+			if event.key == pygame.K_2:
+				algorithm = 2
+				algorithm_name = "DFS"
+				screen.fill(BLACK)
+			if event.key == pygame.K_3:
+				algorithm = 3
+				algorithm_name = "."
+				screen.fill(BLACK)
+
+	instructions1 = font.render("Click izquierdo -> Seleccionar punto de inicio", True, WHITE)
+	instructions2 = font.render("Click derecho -> Generar camino", True, WHITE)
+	instructions3 = font.render("1, 2 y 3-> Cambiar de algoritmo", True, WHITE)
+	alg_name = font.render("Algoritmo: " + str(algorithm_name), True, WHITE)
+	alg_time = font.render("Tiempo de ejecucion: "+ str(time) + "ms", True, WHITE)
+	path_len = font.render("Nodos recorridos: " + str(path_lenght), True, WHITE)
+	screen.blit(instructions1, (0, 0))
+	screen.blit(instructions2, (0, 20))
+	screen.blit(instructions3, (0, 40))
+	screen.blit(alg_name, (width-200, 0))
+	screen.blit(alg_time, (0, height-25))
+	screen.blit(path_len, (width-250, height-25))
+
+	FillSquare(RED, start_pos)
+	DrawBoard()
+	pygame.display.flip()
