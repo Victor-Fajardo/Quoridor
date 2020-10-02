@@ -17,15 +17,23 @@ Board_Graph.add_edges_from((((i, j), (i - 1, j)) for i in range(rows) for j in r
 Board_Graph.add_edges_from((((i, j), (i, j - 1)) for i in range(rows) for j in range(columns) if j > 0))
 
 #Creating a wall will delete the edge
-def RemoveEdge(G, x0, y0, x1, y1):
-	G.remove_edge((y0, x0), (y1, x1))
-	return G
+def RemoveEdge(x0, y0, x1, y1):
+	Board_Graph.remove_edge((x0, y0), (x1, y1))
+	return 0
 
+'''
+RemoveEdge(0,0,0,1)
+RemoveEdge(0,2,1,2)
+RemoveEdge(7,5,8,5)
+RemoveEdge(4,3,4,4)
+RemoveEdge(0,6,1,6)
+RemoveEdge(2,0,3,0)
+'''
 #ToDo:
 #Algorithm to place walls 
-def PlaceWall():
+#def PlaceWall():
 	#If degree return more than 1 then a wall can be placed
-	Board_Graph.degree[(0,0)]
+#	Board_Graph.degree[(0,0)]
 
 def BFS(ini, fin):
 	time_start = pygame.time.get_ticks()
@@ -125,7 +133,7 @@ def BruteForce(ini, fin):
 
 		if nodoIniAux[0] < fin[0]:
 			pasoX += 1
-		elif nodoIniAux[0] < fin[0]:
+		elif nodoIniAux[0] > fin[0]:
 			pasoX -= 1
 		elif nodoIniAux[0] == fin[0]:
 			if (nodoIniAux[1] < fin[1]):
@@ -144,23 +152,19 @@ def BruteForce(ini, fin):
 	time = time_end - time_start
 	return queue, time
 
-#Display Graph
-#networkx.draw(Board_Graph, with_labels = True, node_size = 50)
-#plt.show()
-
-#=============#
-#=============#
-#=============#
-#=============#
-#=============#
-#=============#
+#====================================================#
+#====================================================#
+#====================================================#
+#====================================================#
+#====================================================#
+#====================================================#
 
 #Board visual representation using Pygame
 pygame.init()
 
 #Font created
 pygame.font.init()
-font = pygame.font.SysFont("verdana", 20)
+font = pygame.font.SysFont("verdana", 16)
 
 #Screen size defined:
 global width
@@ -174,7 +178,7 @@ algorithm = 1
 algorithm_name = "BFS"
 path_lenght = 0
 time = 0
-path = ()
+path = None
 
 #Colors defined:
 BLACK    = (   0,   0,   0)
@@ -220,6 +224,42 @@ def DrawPath(path):
 		for i in range(len(path)):
 			FillSquare(GREEN, path[i])
 
+def DrawWall(node1, node2):
+	SpaceX = int((width-100)/columns)
+	SpaceY = int((height-100)/rows)
+
+	if node1[0] == node2[0]:
+		x0 = 50 + SpaceX*node1[0]
+		y0 = 80 + SpaceY*node2[1]
+		x  = 50 + SpaceX*(node2[0]+1)
+		y  = y0
+	elif node1[1] == node2[1]:
+		x0 = 50 + SpaceX*node2[0]
+		y0 = 80 + SpaceY*node1[1]
+		x  = x0
+		y  = 80 + SpaceY*(node2[1]+1)
+
+	pygame.draw.line(screen, WHITE, (x0, y0), (x, y), 5)
+
+def RefreshScreen():
+	screen.blit(instructions1, (0, 0))
+	screen.blit(instructions2, (0, 16))
+	screen.blit(instructions3, (0, 32))
+	screen.blit(alg_name, (width-200, 0))
+	screen.blit(alg_time, (0, height-21))
+	screen.blit(path_len, (width-200, height-21))
+	FillSquare(RED, start_pos)
+	DrawBoard()
+	'''
+	DrawWall((0,0), (0,1))
+	DrawWall((0,2), (1,2))
+	DrawWall((7,5), (8,5))
+	DrawWall((4,3), (4,4))
+	DrawWall((0,6), (1,6))
+	DrawWall((2,0), (3,0))
+	'''
+	pygame.display.flip()
+
 #Game Loop:
 while not done:
 	for event in pygame.event.get():
@@ -231,6 +271,7 @@ while not done:
 				pos = ConvertMousePos(pygame.mouse.get_pos())
 				start_pos = pos
 				screen.fill(BLACK)
+				path = ()
 
 			if event.button == 3:
 				pos = ConvertMousePos(pygame.mouse.get_pos())
@@ -248,19 +289,9 @@ while not done:
 				screen.fill(BLACK)
 				for i in range(len(path)):
 					FillSquare(GREEN, path[i])
-					
 					#Delay added
 					pygame.time.delay(50)
-					#Upadating the screen
-					screen.blit(instructions1, (0, 0))
-					screen.blit(instructions2, (0, 20))
-					screen.blit(instructions3, (0, 40))
-					screen.blit(alg_name, (width-300, 0))
-					screen.blit(alg_time, (0, height-25))
-					screen.blit(path_len, (width-250, height-25))
-					FillSquare(RED, start_pos)
-					DrawBoard()
-					pygame.display.flip()
+					RefreshScreen()
 
 
 		#Algorithm selection
@@ -278,6 +309,11 @@ while not done:
 				algorithm_name = "Fuerza Bruta"
 				screen.fill(BLACK)
 
+	if path != None:
+		if len(path) > 0:
+			start_pos = path[0]
+			path.popleft()
+
 	screen.fill(BLACK)
 	instructions1 = font.render("Click izquierdo -> Seleccionar punto de inicio", True, WHITE)
 	instructions2 = font.render("Click derecho -> Generar camino", True, WHITE)
@@ -285,13 +321,6 @@ while not done:
 	alg_name = font.render("Algoritmo: " + str(algorithm_name), True, WHITE)
 	alg_time = font.render("Tiempo de ejecucion: "+ str(time) + "ms", True, WHITE)
 	path_len = font.render("Nodos recorridos: " + str(path_lenght), True, WHITE)
-	screen.blit(instructions1, (0, 0))
-	screen.blit(instructions2, (0, 20))
-	screen.blit(instructions3, (0, 40))
-	screen.blit(alg_name, (width-300, 0))
-	screen.blit(alg_time, (0, height-25))
-	screen.blit(path_len, (width-250, height-25))
+	pygame.time.delay(50)
 	DrawPath(path)
-	FillSquare(RED, start_pos)
-	DrawBoard()
-	pygame.display.flip()
+	RefreshScreen()
