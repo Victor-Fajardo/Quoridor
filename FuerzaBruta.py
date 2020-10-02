@@ -10,6 +10,11 @@ Board_Graph.add_nodes_from((i, j) for i in range(rows) for j in range(columns))
 Board_Graph.add_edges_from((((i, j), (i - 1, j)) for i in range(rows) for j in range(columns) if i > 0))
 Board_Graph.add_edges_from((((i, j), (i, j - 1)) for i in range(rows) for j in range(columns) if j > 0))
 
+<<<<<<< HEAD
+=======
+print(Board_Graph.has_edge((0, 0), (0, 1)))
+
+>>>>>>> 7b99e6501367d633e2f1a3d528f85363cac423e4
 
 def fb(ini, fin):
     queue = deque()
@@ -46,9 +51,11 @@ def fb(ini, fin):
             fuerza_bruta((nx, ny), fin)
 
     fuerza_bruta(ini, fin)
-    print(len(queue))
     return queue
 
-#networkx.draw(Board_Graph, with_labels=True, node_size=50)
-#plt.show()
-print(fb((0, 0), (8, 8)))
+
+networkx.draw(Board_Graph, with_labels=True, node_size=50)
+plt.show()
+var = fb((1, 1), (8, 7))
+print(var)
+print(len(var))
