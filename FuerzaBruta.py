@@ -10,11 +10,6 @@ Board_Graph.add_nodes_from((i, j) for i in range(rows) for j in range(columns))
 Board_Graph.add_edges_from((((i, j), (i - 1, j)) for i in range(rows) for j in range(columns) if i > 0))
 Board_Graph.add_edges_from((((i, j), (i, j - 1)) for i in range(rows) for j in range(columns) if j > 0))
 
-<<<<<<< HEAD
-=======
-print(Board_Graph.has_edge((0, 0), (0, 1)))
-
->>>>>>> 7b99e6501367d633e2f1a3d528f85363cac423e4
 
 def fb(ini, fin):
     queue = deque()
