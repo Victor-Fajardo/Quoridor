@@ -17,7 +17,6 @@ def reconstructionPath(ini, fin, dad):
 
 
 def BFS(ini, fin, rows, columns, Board_Graph):
-
     visit = [[False for col in range(columns)] for row in range(rows)]
     dx = [0, 0, 1, -1]
     dy = [1, -1, 0, 0]
@@ -31,7 +30,7 @@ def BFS(ini, fin, rows, columns, Board_Graph):
         visit[cur[0]][cur[1]] = True
         for op in range(4):
             nx, ny = cur[0] + dx[op], cur[1] + dy[op]
-            if ( not invalid(nx, ny, visit, rows, columns) ) and (Board_Graph.has_edge(cur, (nx, ny))):
+            if (not invalid(nx, ny, visit, rows, columns)) and (Board_Graph.has_edge(cur, (nx, ny))):
                 queue.append((nx, ny))
                 # visited[nx][ny] = True
                 dad[(nx, ny)] = cur
@@ -41,7 +40,6 @@ def BFS(ini, fin, rows, columns, Board_Graph):
 
 
 def DFS(ini, fin, rows, columns, Board_Graph):
-
     visit = [[False for col in range(columns)] for row in range(rows)]
     dx = [0, 0, 1, -1]
     dy = [1, -1, 0, 0]
@@ -77,22 +75,37 @@ def BruteForce(ini, fin, rows, columns, Board_Graph):
         pasoX = 0
         pasoY = 0
         visit[nodoIniAux[0]][nodoIniAux[1]] = True
-
+        dx = [0, 0, 1, -1]
+        dy = [1, -1, 0, 0]
+        isValid = False
         if nodoIniAux[0] < fin[0]:
+            # derecha
             pasoX += 1
         elif nodoIniAux[0] > fin[0]:
+            # izquierda
             pasoX -= 1
         elif nodoIniAux[0] == fin[0]:
             if (nodoIniAux[1] < fin[1]):
+                # abajo
                 pasoY += 1
             elif (nodoIniAux[1] > fin[1]):
+                # arriba
                 pasoY -= 1
 
         nx, ny = nodoIniAux[0] + pasoX, nodoIniAux[1] + pasoY
+        print("VALORES", nodoIniAux, ny)
         if (not invalid(nx, ny, visit, rows, columns)) and (Board_Graph.has_edge(nodoIniAux, (nx, ny))):
             ##se agrega el nodo valido
+            isValid = True
             queue.append((nx, ny))
             fuerza_bruta((nx, ny), fin)
+        if not isValid:
+            for posi in range(4):
+                nx, ny = nodoIniAux[0] + dx[posi], nodoIniAux[1] + dy[posi]
+                if (not invalid(nx, ny, visit, rows, columns)) and (Board_Graph.has_edge(nodoIniAux, (nx, ny))):
+                    ##se agrega el nodo valido
+                    queue.append((nx, ny))
+                    fuerza_bruta((nx, ny), fin)
 
     fuerza_bruta(ini, fin)
     return queue
