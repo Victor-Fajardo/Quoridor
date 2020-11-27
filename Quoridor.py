@@ -2,6 +2,7 @@ import pygame
 import networkx
 import matplotlib.pyplot as plt
 from collections import deque
+from findingPaths import *
 
 #Board Size Defined:
 global rows
@@ -34,123 +35,6 @@ RemoveEdge(2,0,3,0)
 #def PlaceWall():
 	#If degree return more than 1 then a wall can be placed
 #	Board_Graph.degree[(0,0)]
-
-def BFS(ini, fin):
-	time_start = pygame.time.get_ticks()
-	def invalid(auxcur, x, y):
-		return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
-			   or (visit[x][y])
-
-	def reconstructionPath():
-		path = deque()
-		ix = fin
-		while ix is not dad[ini]:
-			path.appendleft(ix)
-			ix = dad[ix]
-		return path
-
-	visit = [[False for col in range(columns)] for row in range(rows)]
-	dx = [0, 0, 1, -1]
-	dy = [1, -1, 0, 0]
-	dad = {}
-	queue = deque()
-	dad[ini] = (-1, -1)
-	queue.appendleft(ini)
-	#visit[ini[0]][ini[1]] = True
-	while len(queue):
-		cur = queue.popleft()
-		visit[cur[0]][cur[1]] = True
-		for op in range(4):
-			nx, ny = cur[0] + dx[op], cur[1] + dy[op]
-			if (not invalid(cur, nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
-				queue.append((nx, ny))
-				#visit[nx][ny] = True
-				dad[(nx, ny)] = cur
-
-	p = reconstructionPath()
-	#print(len(p))
-	time_end = pygame.time.get_ticks()
-	time = time_end - time_start
-	return p, time
-
-def DFS(ini, fin):
-	time_start = pygame.time.get_ticks()
-	def invalid(x, y):
-		return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
-			   or (visit[x][y])
-
-	def reconstructionPath():
-		path = deque()
-		ix = fin
-		while ix is not dad[ini]:
-			path.appendleft(ix)
-			ix = dad[ix]
-
-		return path
-
-	visit = [[False for col in range(columns)] for row in range(rows)]
-	dx = [0, 0, 1, -1]
-	dy = [1, -1, 0, 0]
-	dad = {}
-	queue = deque()
-	dad[ini] = (-1, -1)
-	queue.appendleft(ini)
-	#visit[ini[0]][ini[1]] = True
-	while len(queue):
-		cur = queue.pop()
-		visit[cur[0]][cur[1]] = True
-		for op in range(4):
-			nx, ny = cur[0] + dx[op], cur[1] + dy[op]
-			if (not invalid(nx, ny)) and (Board_Graph.has_edge(cur, (nx, ny))):
-				queue.append((nx, ny))
-				#visit[nx][ny] = True
-				dad[(nx, ny)] = cur
-
-	p = reconstructionPath()
-	#print(len(p))
-	time_end = pygame.time.get_ticks()
-	time = time_end - time_start
-	return p, time
-
-def BruteForce(ini, fin):
-	time_start = pygame.time.get_ticks()
-	queue = deque()
-	queue.append(ini)
-
-	def fuerza_bruta(ini, fin):
-		if ini == fin:
-			return
-
-		def invalid(x, y):
-			return (x < 0) or (x >= rows) or (y < 0) or (y >= columns) \
-				   or (visit[x][y])
-
-		visit = [[False for col in range(columns)] for row in range(rows)]
-		nodoIniAux = ini
-		pasoX = 0
-		pasoY = 0
-		visit[nodoIniAux[0]][nodoIniAux[1]] = True
-
-		if nodoIniAux[0] < fin[0]:
-			pasoX += 1
-		elif nodoIniAux[0] > fin[0]:
-			pasoX -= 1
-		elif nodoIniAux[0] == fin[0]:
-			if (nodoIniAux[1] < fin[1]):
-				pasoY += 1
-			elif (nodoIniAux[1] > fin[1]):
-				pasoY -= 1
-
-		nx, ny = nodoIniAux[0] + pasoX, nodoIniAux[1] + pasoY
-		if (not invalid(nx, ny)) and (Board_Graph.has_edge(nodoIniAux, (nx, ny))):
-			##se agrega el nodo valido
-			queue.append((nx, ny))
-			fuerza_bruta((nx, ny), fin)
-
-	fuerza_bruta(ini, fin)
-	time_end = pygame.time.get_ticks()
-	time = time_end - time_start
-	return queue, time
 
 #====================================================#
 #====================================================#
@@ -276,16 +160,19 @@ while not done:
 			if event.button == 3:
 				pos = ConvertMousePos(pygame.mouse.get_pos())
 
+				time_start = pygame.time.get_ticks()
 				if algorithm == 1:
-					alg_result = BFS(start_pos, pos)
+					alg_result = BFS(start_pos, pos, rows, columns, Board_Graph)
 				elif algorithm == 2:
-					alg_result = DFS(start_pos, pos)
+					alg_result = DFS(start_pos, pos, rows, columns, Board_Graph)
 				elif algorithm == 3:
-					alg_result = BruteForce(start_pos, pos)
+					alg_result = BruteForce(start_pos, pos, rows, columns, Board_Graph)
+				time_end = pygame.time.get_ticks()
+				time = time_end - time_start
 
-				path = alg_result[0]
+				path = alg_result
 				path_lenght = len(path)
-				time = alg_result[1]
+				print(path)
 				screen.fill(BLACK)
 				for i in range(len(path)):
 					FillSquare(GREEN, path[i])
